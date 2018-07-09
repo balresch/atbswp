@@ -13,6 +13,8 @@ class Unit:
     _amountOwned = 0
     _increaseFactor = 0.1
     _income = 1
+    _power = 1
+    _basePrice = 10
 
     def calcPriceFactor(self):
         return 1 + (self._amountOwned * self._increaseFactor)
@@ -41,19 +43,20 @@ class Unit:
     def __str__(self):
         return self._name + " - Basispreis " + str(self._basePrice) + ", Preisanstieg " \
                + str(self._increaseFactor * 100) + "% - In Besitz " + str(self._amountOwned) + ", Aktueller Preis " \
-               + str(self.currentPrice())
+               + str(self.currentPrice()) + ", Kampfkraft " + str(self._power)
 
 
 class Farmer(Unit):
     _basePrice = 10
     _name = "Bauer"
     _increaseFactor = 0.2
-
+    _income = 2
 
 class Soldier(Unit):
     _basePrice = 20
     _name = "Soldat"
-    _income = 3
+    _income = 0
+    _power = 3
 
 
 def nextTurn():
@@ -106,8 +109,16 @@ def reportGamestate():
     for unit in _units:
         income += unit.getEarnings()
 
-    blockprint("Dorf '" + _villageName + "' von " + _playerName + ", Runde " + str(_time) + ", Einkommen " + str(
-        income) + ", Gold " + str(_balance))
+    summary = "Dorf '" + _villageName + "' von " + _playerName + ", Runde " + str(_time) + ", Einkommen " \
+              + str(income) + ", Gold " + str(_balance)
+
+    additionalLines = [""]
+    if not _time % 10 == 0:
+        additionalLines.append("Zeit bis zum nächsten Angriff: " + str(10-(_time%10)))
+    else:
+        additionalLines.append("ANGRIFF!")
+
+    blockprint(summary, additionalLines)
 
 
 # initialize game
@@ -129,6 +140,7 @@ reportGamestate()
 # Request loop
 
 _gameactive = True
+
 while _gameactive:
 
     # Display unit details
@@ -147,7 +159,7 @@ while _gameactive:
     choices.append("Aussetzen")
     choices.append("Spiel beenden")
 
-    # request choice formthis round from player
+    # request choice for this round from player
     action = requestChoice("Was möchtest du diese Runde unternehmen?", choices)
 
     for x in range(len(_units)):
@@ -157,6 +169,3 @@ while _gameactive:
         nextTurn()
     elif x + 2 == action:
         _gameactive = False
-
-
-
